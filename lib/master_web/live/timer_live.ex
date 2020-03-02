@@ -1,7 +1,6 @@
 defmodule MasterWeb.TimerLive do
   use Phoenix.LiveView
   alias Master.Counter
-  import Phoenix.HTML, only: [raw: 1]
 
   def mount(_params, _session, socket) do
     if connected?(socket), do: :timer.send_interval(1000, self(), :tick)
@@ -19,7 +18,6 @@ defmodule MasterWeb.TimerLive do
   
   def advance(socket) do
     count = socket.assigns.count
-    IO.inspect socket.assigns
     assign(socket, count: Counter.inc(count))
   end
   

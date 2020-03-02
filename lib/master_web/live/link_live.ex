@@ -1,7 +1,6 @@
 defmodule MasterWeb.LinkLive do
   use Phoenix.LiveView
   alias Master.Counter
-  import Phoenix.HTML, only: [raw: 1]
 
   def mount(_params, _session, socket) do
     {
