@@ -1,2 +1,2 @@
-defmodule Mastermind.Game.Board do
+defmodule Master.Game.Board do
 end

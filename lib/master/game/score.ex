@@ -1,2 +1,2 @@
-defmodule Mastermind.Game.Score do
+defmodule Master.Game.Score do
 end
