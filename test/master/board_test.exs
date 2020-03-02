@@ -21,7 +21,6 @@ defmodule GameTest do
     assert :whites in Map.keys( %Score{} )
   end
   
-  @tag :skip
   test "Count the right pegs in the right slots" do
     
     # 1 and 2 are in the same position in both lists... etc
@@ -37,7 +36,6 @@ defmodule GameTest do
     assert Score.red_count([4, 3, 2, 1], [1, 2, 3, 4]) == 0
   end
 
-  @tag :skip
   test "Count wrong pegs in the wrong slots as miss" do
     # misses are not used in the game, but they help calculate white count
     
@@ -54,7 +52,6 @@ defmodule GameTest do
     assert Score.miss_count([4, 3, 2, 1], [1, 2, 3, 4]) == 0
   end
 
-  @tag :skip
   test "should count whites" do
     # whites are the right pegs in the wrong slots
     
@@ -75,7 +72,6 @@ defmodule GameTest do
     
   end
 
-  @tag :skip
   test "should roll up red and white counts" do
     score = 
       [1, 2, 3, 4]
@@ -85,10 +81,100 @@ defmodule GameTest do
     assert score.reds == 2
   end
 
-  @tag :skip
   test "should compute a winner" do
     assert (Score.new([1, 2, 3, 4], [1, 2, 3, 4]) |> Score.winner?)
     refute (Score.new([6, 2, 3, 4], [1, 2, 3, 4]) |> Score.winner?)
   end
+  
+  # lab3
+  @tag :skip
+  test "if the last game is a winner the game is a winner" do
+    assert Game.won?(four_move_winner())
+    refute Game.won?(four_move_nonwinner())
+  end
 
+  @tag :skip
+  test "won games are finished" do
+    assert Game.finished?(four_move_winner())
+    refute Game.finished?(four_move_nonwinner())
+  end
+
+  @tag :skip
+  test "games are finished after 10 moves" do
+    assert Game.finished?(ten_move_loser())
+  end
+
+  @tag :skip
+  test "should return board with guess and score for each row" do
+    board = 
+      two_move_winner()
+      |> Game.board
+
+    expected = 
+      [
+        [[1, 2, 3, 3], %Score{reds: 3, whites: 0}], 
+        [[1, 2, 3, 4], %Score{reds: 4, whites: 0}]
+      ]
+        
+    assert board == expected
+  end
+
+  @tag :skip
+  test "should return state with board, finished and won" do
+    %{board: board, won: won, finished: finished} = 
+      two_move_winner()
+      |> Game.state
+
+    expected = 
+      [
+        [[1, 2, 3, 3], %Score{reds: 3, whites: 0}], 
+        [[1, 2, 3, 4], %Score{reds: 4, whites: 0}]
+      ]
+        
+    assert board == expected
+    assert finished
+    assert won
+  end
+
+
+
+  def two_move_winner() do
+    [1, 2, 3, 4]
+    |> Game.new
+    |> Game.move([1, 2, 3, 3])
+    |> Game.move([1, 2, 3, 4])
+  end
+
+  def four_move_winner() do
+    [1, 2, 3, 4]
+    |> Game.new
+    |> Game.move([1, 2, 3, 1])
+    |> Game.move([1, 2, 3, 2])
+    |> Game.move([1, 2, 3, 3])
+    |> Game.move([1, 2, 3, 4])
+  end
+
+  def four_move_nonwinner() do
+    [1, 2, 3, 4]
+    |> Game.new
+    |> Game.move([1, 2, 3, 1])
+    |> Game.move([1, 2, 3, 2])
+    |> Game.move([1, 2, 3, 3])
+    |> Game.move([1, 2, 3, 5])
+  end
+
+  def ten_move_loser() do
+    [1, 2, 3, 4]
+    |> Game.new
+    |> Game.move([1, 2, 3, 1])
+    |> Game.move([1, 2, 3, 2])
+    |> Game.move([1, 2, 3, 3])
+    |> Game.move([1, 2, 3, 5])
+    |> Game.move([1, 2, 3, 6])
+    |> Game.move([1, 2, 1, 1])
+    |> Game.move([1, 2, 2, 3])
+    |> Game.move([1, 2, 4, 5])
+    |> Game.move([1, 2, 5, 3])
+    |> Game.move([1, 2, 6, 5])
+  end
 end
