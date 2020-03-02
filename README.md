@@ -7,80 +7,218 @@ We want to build our software in layers. Remember the sentence:
 The layers are: 
 
 - Data (do). The modules with the corresponding structs. Our core files are in in `lib/game` 
-- Functional Core (fun). A functional core. 
+- *Functional Core (fun). A functional core.*
 - Tests (things). We run as many tests as possible in the functional core. 
 - Boundaries (big). All process machinery, including OTP and tainted user input, are in the boundaries. Our boundaries will go in `lib/master_web/game_live.ex`. 
 - Lifecycle (loud). Liveview will manage all OTP and lifecycle for us.
 - Workers (wildebeests). Database repos, workers, or other processes our application might need. We won't need workers. 
 
-# Using Elixir to Solve a Nontrivial Problem
+# Universe for Labs 2 and 3 
 
-In short, this lab is about deisign, and how to build software in chunks that are easy to deploy in units and build in pieces. We will use the same strategies in the upcoming book by James Gray and Bruce Tate, tentatively called Designing Elixir Systems with OTP. 
+Here's your lab 2 universe. 
 
-## The Sandbox
+## Both Labs
 
-Rather than have you work with the entire Elixir language, we'll deal with a small portion at a time. Before each exercise, we'll let you see a list of functions you can use to solve the problem. We don't want to solve the problem for you, but we do want you to focus on using Elixir and your tools rather than playing "Where's Waldo" to find the magic function you need to solve an exercise. 
+Both labs can make use of these techniques. 
 
-## The Problem
+### Creating New Structs
 
-We will give you a single problem, but let you solve it in pieces. You'll start each lab with a working code base and you'll build on that code base to make tests pass, one at a time. 
+When you're working with structs, you'd create a new one like this: 
 
-## Turning Red Ligths Green
+```elixir
+  %Game{
+    field: "value"
+  }
+```
 
-Our labs are test-driven. You will activate one test at a time, and run tests to make sure your program does what it should. This is a good way to learn, and it's a small step from learning to code in this way to writing your own tests and solving business problems. 
+But if you're actually working in the `Game` module, it's better to refer to the module using a special reserved word: `__MODULE__`. So if you're creating a function to return a new struct, your code would look like this: 
 
-# Why do conference trainings?
+```elixir
+def new() do
+  %__MODULE__{
+    field: "value"
+  }
+end
+```
 
-This is a small cross section of our one day LiveView course. You'll see we just scratch the surface. 
+See https://hexdocs.pm/elixir/Kernel.SpecialForms.html for details. (I googled Elixir __MODULE__)
 
-# Build the data layer
 
-We're going to start with the right data. You'll play the MasterMind game in class to understand the rules. We want to create a data layer that: 
+# Lab 2: Computing Scores
 
-- allows us to represent the intermediate state for a game
-- gives us a place to collect functions for our module. 
+When you're computing scores for your mastermind game, you'll work with three data structures. 
 
-MasterMind is a game with these rules. 
+- The `answer` is the actual correct code. 
+- The `guess` is a user's attempt to guess the correct code. 
+- The `score`  (see below)
 
-- The computer will make a secret code called an `answer`
-- The humans will guess codes we'll call `guesses`
-- The computer will provide hints based on guesses called `scores`
-- The humans win if they guess the code in 10 tries. 
+## Lab 2: Computing the Score
 
-Try out the game [mastermind](https://www.webgamesonline.com/mastermind/). 
+In this lab, you'll compute the score of a turn. A score is the number of reds and whites. A red is the correct number (or peg) in the correct location; a white peg is a correct number in the wrong location; a miss is an incorrect location. Each number from the guess will be either a red, a white, or nothing. It can't be more than one. 
 
-In the first lab, we'll create the data layer for the game `Board`, and for a single `Score`. 
+## List Subtraction
 
-## 1. Create a module called `Board`.  
+In the game, you'll find it useful to subtract one list from another. For example: 
 
-The board should have:
 
-- a four-digit `answer` we'll represent as a `String` with a default of `1234`
-- a list of `guesses` with a default of `[]`. 
+```elixir
+  [1, 2, 3, 4] -- [1, 2]
+  -> [3, 4]
+```
 
-Along the way, we'll need a `score` for each guess. 
+And: 
 
-## 2. Create a module called `Score`. 
+```elixir
+  [1, 1, 1, 2] -- [1, 2]
+  -> [1, 1]
+```
 
-The score should have: 
 
-- a count of red pegs called `reds`. 
-- a count of white pegs called `whites`. 
+You can use this list subtraction to find the number of misses in your lab. 
 
-Run your tests, making changes until they pass.
+### Enum Functions
 
-# Phoenix
+These are a few Enum functions that will help you. 
 
-To start your Phoenix server:
+- `Enum.filter(list, fn)` will return all items of the list that return true for fn. For example, `Enum.filter([1, 2, 3], Integer.is_even/1)` would return `[2]`.
+- Enum.zip(list1, list2) will make a list of tuples from the first elements, second elements, etc. So `Enum.zip([1, 2, 3], [:a, :b, :c])` would give you [{1, :a}, {2, :b}, {3, :c}]
+- `Enum.count(list)` counts the elements in `list`. `length` does the same thing.
+- `Enum.count(list, filter_fn/1)` counts the elements in `list` that returns true for the function.
+- `length(list)` returns the length of a list. 
 
-  * Install dependencies with `mix deps.get`
-  * Install Node.js dependencies with `cd assets && npm install`
-  * Start Phoenix endpoint with `mix phx.server`
+Find more at https://hexdocs.pm/elixir/Enum.html (I googled for Elixir Enum)
 
-Run tests: 
+### Pattern Matching Function Heads
 
-  * mix test
+Optional function arguments look like 
+
+```
+def function(optional \\ :default) do
+  optional
+end
+```
+
+For that code, calling `optional()` returns `:default` but calling `optional(:provided)` returns `:provided`.
+
+
+Functions with a different number of arguments are different. Arguments that begin with an underscore are ignored. 
+
+If you have two functions with the same number of arguments, look at the function head. Elixir will take the first function head that matches the structure. 
+
+For example, you might have this function: 
+
+```elixir
+def blank?(nil) do
+  true
+end
+
+def blank?("") do
+  true
+end
+
+def blank?(_other) do
+  false
+end
+```
+
+You can write a function that matches a pattern in your function head. For example, you'll need to write a function to determine if two elements of a tuple match. Here's a function that converts a two-tuple to a list: 
+
+```elixir
+def convert({x, y}) do
+  [x, y]
+end
+```
+
+
+You can use a similar technique to determine if two elements match. 
+
+### Binding Variables, and Testing For Equality
+
+Use `==` to test for equality. 
+
+Use `=` to bind the variables on the left to the statement on the right. A couple of examples: 
+
+```elixir
+magic_number = 42
+{x, y} = point
+%Person{first_name: first_name} = %Person{first_name: "José", last_name: "Valim"}
+```
+
+
+# Lab 3: Advancing the Game
+
+## Working With the Game 
+
+These techniques will help with Lab 3.
+
+### Functions
+
+Define an Elixir fuction like this: 
+
+```elixir
+defmodule Score do
+  def compute_score(arg1, arg2) do
+    
+  end
+end
+``` 
+
+You can make the function private with `defp` like this: 
+
+```elixir
+  ...
   
-Run IEx with game
+  def compute_score(arg1, arg2) do
+    help_compute_score()
+  end
+  
+  defp help_compute_score() do
+  end
+  ...
+end
+``` 
 
-  * iex -S mix
+You can make an argument optional like this: 
+
+```elixir
+  def def say( something \\ "hi") do
+    IO.puts something
+  end
+end
+``` 
+
+### Enum Functions
+
+These are a few Enum functions that will help you. 
+
+- `Enum.take(list, n)` will take the first n elements of a list
+- `Enum.sort(list)` will sort a list
+- `Enum.shuffle(list)` will sort the list in a random order
+- `Enum.map(list, fn)` will collect the results of calling fn(item) for every item in the list.
+
+
+
+Find more at https://hexdocs.pm/elixir/Enum.html (I googled for Elixir Enum)
+
+### Ranges
+
+Often in the mastermind game you might want a shorthand for all the possible guesses, and that's a list of numbers from 1-6. You can do that with a range `(1..6)`
+
+### Pipes
+
+In Elixir, you can string functions together when you're transforming from one form to the next. 
+
+So if you're starting with a list and you want to sort them and look at the first five, you'd do this: 
+
+```elixir
+  list
+  |> Enum.sort
+  |> Enum.take(4)
+```
+
+## Making a List of Random Numbers (includes spoilers)
+
+You will want to combine some of the functions above in a pipe. I recommend using shuffle rather than building a list of 6 distinct random numbers, but both approaches work. 
+
+One way to solve the problem is to make a list of numbers from 1-6, shuffle them, and take four. 
+
