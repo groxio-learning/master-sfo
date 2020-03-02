@@ -20,4 +20,75 @@ defmodule GameTest do
     assert :reds   in Map.keys( %Score{} )
     assert :whites in Map.keys( %Score{} )
   end
+  
+  @tag :skip
+  test "Count the right pegs in the right slots" do
+    
+    # 1 and 2 are in the same position in both lists... etc
+    assert Score.red_count([1, 2, 3, 4], [1, 2, 5, 6]) == 2
+
+    # No pegs overlap
+    assert Score.red_count([0, 0, 0, 0], [1, 1, 1, 1]) == 0
+
+    # all pegs are in the right position
+    assert Score.red_count([1, 2, 3, 4], [1, 2, 3, 4]) == 4
+    
+    # No pegs are in the right position, even though they are the right pegs
+    assert Score.red_count([4, 3, 2, 1], [1, 2, 3, 4]) == 0
+  end
+
+  @tag :skip
+  test "Count wrong pegs in the wrong slots as miss" do
+    # misses are not used in the game, but they help calculate white count
+    
+    # 5 and 6 are complete misses
+    assert Score.miss_count([1, 2, 3, 4], [1, 2, 5, 6]) == 2
+
+    # all are misses
+    assert Score.miss_count([0, 0, 0, 0], [1, 1, 1, 1]) == 4
+    
+    # 1 2 3 4 are the right pegs in the right slots
+    assert Score.miss_count([1, 2, 3, 4], [1, 2, 3, 4]) == 0
+
+    # 1 2 3 4 are the right pegs in the wrong slots, so not misses
+    assert Score.miss_count([4, 3, 2, 1], [1, 2, 3, 4]) == 0
+  end
+
+  @tag :skip
+  test "should count whites" do
+    # whites are the right pegs in the wrong slots
+    
+    # 5 and 6 are complete misses; 1 and 2 are reds so none are whites. 
+    assert Score.white_count([1, 2, 3, 4], [1, 2, 5, 6]) == 0
+
+    # none are the right pegs
+    assert Score.white_count([0, 0, 0, 0], [1, 1, 1, 1]) == 0
+    
+    # 1 2 3 4 are the right pegs in the right slots; none are whites.  
+    assert Score.white_count([1, 2, 3, 4], [1, 2, 3, 4]) == 0
+
+    # 1 2 3 4 are the right pegs in the wrong slots, so all are whites
+    assert Score.white_count([4, 3, 2, 1], [1, 2, 3, 4]) == 4
+
+    # 1 2  are the right pegs in the wrong slots, so are whites
+    assert Score.white_count([4, 3, 2, 1], [1, 2, 6, 6]) == 2
+    
+  end
+
+  @tag :skip
+  test "should roll up red and white counts" do
+    score = 
+      [1, 2, 3, 4]
+      |> Score.new([1, 2, 4, 6])
+      
+    assert score.whites == 1
+    assert score.reds == 2
+  end
+
+  @tag :skip
+  test "should compute a winner" do
+    assert (Score.new([1, 2, 3, 4], [1, 2, 3, 4]) |> Score.winner?)
+    refute (Score.new([6, 2, 3, 4], [1, 2, 3, 4]) |> Score.winner?)
+  end
+
 end
