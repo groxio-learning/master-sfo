@@ -89,26 +89,26 @@ defmodule GameTest do
   # lab3
   @tag :skip
   test "if the last game is a winner the game is a winner" do
-    assert Game.won?(four_move_winner())
-    refute Game.won?(four_move_nonwinner())
+    assert Board.won?(four_move_winner())
+    refute Board.won?(four_move_nonwinner())
   end
 
   @tag :skip
   test "won games are finished" do
-    assert Game.finished?(four_move_winner())
-    refute Game.finished?(four_move_nonwinner())
+    assert Board.finished?(four_move_winner())
+    refute Board.finished?(four_move_nonwinner())
   end
 
   @tag :skip
   test "games are finished after 10 moves" do
-    assert Game.finished?(ten_move_loser())
+    assert Board.finished?(ten_move_loser())
   end
 
   @tag :skip
   test "should return board with guess and score for each row" do
     board = 
       two_move_winner()
-      |> Game.board
+      |> Board.rows
 
     expected = 
       [
@@ -123,7 +123,7 @@ defmodule GameTest do
   test "should return state with board, finished and won" do
     %{board: board, won: won, finished: finished} = 
       two_move_winner()
-      |> Game.state
+      |> Board.state
 
     expected = 
       [
@@ -140,41 +140,41 @@ defmodule GameTest do
 
   def two_move_winner() do
     [1, 2, 3, 4]
-    |> Game.new
-    |> Game.move([1, 2, 3, 3])
-    |> Game.move([1, 2, 3, 4])
+    |> Board.new
+    |> Board.move([1, 2, 3, 3])
+    |> Board.move([1, 2, 3, 4])
   end
 
   def four_move_winner() do
     [1, 2, 3, 4]
-    |> Game.new
-    |> Game.move([1, 2, 3, 1])
-    |> Game.move([1, 2, 3, 2])
-    |> Game.move([1, 2, 3, 3])
-    |> Game.move([1, 2, 3, 4])
+    |> Board.new
+    |> Board.move([1, 2, 3, 1])
+    |> Board.move([1, 2, 3, 2])
+    |> Board.move([1, 2, 3, 3])
+    |> Board.move([1, 2, 3, 4])
   end
 
   def four_move_nonwinner() do
     [1, 2, 3, 4]
-    |> Game.new
-    |> Game.move([1, 2, 3, 1])
-    |> Game.move([1, 2, 3, 2])
-    |> Game.move([1, 2, 3, 3])
-    |> Game.move([1, 2, 3, 5])
+    |> Board.new
+    |> Board.move([1, 2, 3, 1])
+    |> Board.move([1, 2, 3, 2])
+    |> Board.move([1, 2, 3, 3])
+    |> Board.move([1, 2, 3, 5])
   end
 
   def ten_move_loser() do
     [1, 2, 3, 4]
-    |> Game.new
-    |> Game.move([1, 2, 3, 1])
-    |> Game.move([1, 2, 3, 2])
-    |> Game.move([1, 2, 3, 3])
-    |> Game.move([1, 2, 3, 5])
-    |> Game.move([1, 2, 3, 6])
-    |> Game.move([1, 2, 1, 1])
-    |> Game.move([1, 2, 2, 3])
-    |> Game.move([1, 2, 4, 5])
-    |> Game.move([1, 2, 5, 3])
-    |> Game.move([1, 2, 6, 5])
+    |> Board.new
+    |> Board.move([1, 2, 3, 1])
+    |> Board.move([1, 2, 3, 2])
+    |> Board.move([1, 2, 3, 3])
+    |> Board.move([1, 2, 3, 5])
+    |> Board.move([1, 2, 3, 6])
+    |> Board.move([1, 2, 1, 1])
+    |> Board.move([1, 2, 2, 3])
+    |> Board.move([1, 2, 4, 5])
+    |> Board.move([1, 2, 5, 3])
+    |> Board.move([1, 2, 6, 5])
   end
 end
